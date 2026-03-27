@@ -24,6 +24,7 @@ const cardValues = [
 function App() {
   const [cards, setCards] = useState([]);
   const [flipped, setFlipped] = useState([]);
+  const [matched, setMatched] = useState([]);
 
   const intitialize = () => {
     //shuffle
@@ -54,18 +55,38 @@ function App() {
     });
 
     setCards(newCards);
-    
+
     const newFlipped = [...flipped, card.id];
     setFlipped(newFlipped);
 
-    if (flipped.length === 1) {
-      const firstCard = cards[flipped[0]];
+    if (newFlipped.length === 2) {
+      const firstCard = cards.find((c) => c.id === newFlipped[0]);
 
       if (firstCard.value === card.value) {
-        alert("hi");
-      }
-      else{
-        flip
+        setMatched((prev) => [...prev, firstCard.id, card.id]);
+        setFlipped([]);
+        setCards((prev) =>
+          prev.map((c) => {
+            if (c.id === firstCard.id || c.id === card.id) {
+              return { ...c, isMatched: true };
+            } else {
+              return c;
+            }
+          }),
+        );
+      } else {
+        setTimeout(() => {
+          const flippedCards = newCards.map((c) => {
+            if (newFlipped.includes(c.id) || c.id === card.id) {
+              return { ...c, isFlipped: false };
+            } else {
+              return c;
+            }
+          });
+          setCards(flippedCards);
+        }, 1000);
+
+        setFlipped([]);
       }
     }
   };
@@ -77,7 +98,7 @@ function App() {
 
         <div className="cards-grid">
           {cards.map((card) => (
-            <Card card={card} onClick={() => handleClick(card)} />
+            <Card key={card.id} card={card} onClick={() => handleClick(card)} />
           ))}
         </div>
       </div>
