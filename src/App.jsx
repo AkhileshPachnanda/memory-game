@@ -25,18 +25,38 @@ function App() {
   const [cards, setCards] = useState([]);
   const [flipped, setFlipped] = useState([]);
   const [matched, setMatched] = useState([]);
+  const [score, setScore] = useState(0);
+  const [moves, setMoves] = useState(0);
+
+  const shuffle = (array) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[i], shuffled[j]];
+    }
+    return shuffled;
+  };
 
   const intitialize = () => {
-    //shuffle
-
-    const final = cardValues.map((value, index) => ({
-      id: index,
+    const shuffled = shuffle(cardValues);
+    console.log("original:", cardValues);
+    console.log("shuffled:", JSON.stringify(shuffled));
+    const final = shuffled.map((value, index) => ({
+      id: `${Date.now()}-${index}`,
       value,
       isFlipped: false,
       isMatched: false,
     }));
 
+    console.log(
+      "final:",
+      final.map((c) => c.value),
+    );
     setCards(final);
+    setScore(0);
+    setMoves(0);
+    setFlipped([]);
+    setMatched([]);
   };
 
   useEffect(() => {
@@ -44,9 +64,11 @@ function App() {
   }, []);
   const handleClick = (card) => {
     if (!card) return;
+
     if (card.isFlipped === true || card.isMatched === true) {
       return;
     }
+    setMoves((prev) => prev + 1);
     const newCards = cards.map((c) => {
       if (c.id === card.id) {
         return { ...c, isFlipped: true };
@@ -64,6 +86,7 @@ function App() {
 
       if (firstCard.value === card.value) {
         setMatched((prev) => [...prev, firstCard.id, card.id]);
+        setScore((prev) => prev + 1);
         setFlipped([]);
         setCards((prev) =>
           prev.map((c) => {
@@ -94,7 +117,7 @@ function App() {
   return (
     <>
       <div className="app">
-        <GameHeader score={3} moves={10} />
+        <GameHeader score={score} moves={moves} onReset={intitialize} />
 
         <div className="cards-grid">
           {cards.map((card) => (
